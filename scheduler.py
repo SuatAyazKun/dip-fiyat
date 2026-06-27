@@ -151,27 +151,33 @@ def run(url_or_asin: str = "", affiliate_url: str = "") -> bool:
 
 
 if __name__ == "__main__":
-    import msvcrt
-
     lock_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "pipeline.lock")
     os.makedirs(os.path.dirname(lock_path), exist_ok=True)
-    lock_file = open(lock_path, "w")
-    try:
-        msvcrt.locking(lock_file.fileno(), msvcrt.LK_NBLCK, 1)
-    except OSError:
-        logger.warning("Pipeline zaten calisıyor, ikinci istek reddedildi.")
-        sys.exit(0)
+
+    # Windows: msvcrt kilidi, Linux: fcntl kilidi
+    if sys.platform == "win32":
+        import msvcrt
+        lock_file = open(lock_path, "w")
+        try:
+            msvcrt.locking(lock_file.fileno(), msvcrt.LK_NBLCK, 1)
+        except OSError:
+            logger.warning("Pipeline zaten calisiyor, ikinci istek reddedildi.")
+            sys.exit(0)
+    else:
+        import fcntl
+        lock_file = open(lock_path, "w")
+        try:
+            fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError:
+            logger.warning("Pipeline zaten calisiyor, ikinci istek reddedildi.")
+            sys.exit(0)
 
     try:
         init_db()
         url           = sys.argv[1] if len(sys.argv) > 1 else ""
         affiliate_url = sys.argv[2] if len(sys.argv) > 2 else ""
-        ok  = run(url, affiliate_url)
+        ok = run(url, affiliate_url)
     finally:
-        try:
-            msvcrt.locking(lock_file.fileno(), msvcrt.LK_UNLCK, 1)
-        except Exception:
-            pass
         lock_file.close()
 
     sys.exit(0 if ok else 1)

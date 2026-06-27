@@ -26,5 +26,8 @@ pytz==2024.1
 # Ortam değişkenleri (.env dosyası, opsiyonel)
 python-dotenv==1.0.1
 
+# Web dashboard
+flask==3.0.3
+
 # SQLite Python'a dahil — ek kurulum gerekmez
-# FFmpeg ayrı binary olarak indirilir — setup.bat halleder
+# FFmpeg Railway'de nixpacks ile kurulur (nixpacks.toml)
