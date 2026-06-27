@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dip Fiyat — Instagram Paylaşımı</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; color: #222; }
+  header {
+    background: linear-gradient(135deg, #ff4b00, #ff8c00);
+    color: #fff; padding: 18px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    box-shadow: 0 2px 8px rgba(0,0,0,.2);
+  }
+  header h1 { font-size: 1.6rem; }
+  .back-btn {
+    background: rgba(255,255,255,.2); color: #fff; border: none;
+    padding: 8px 16px; border-radius: 8px; cursor: pointer;
+    font-size: .9rem; text-decoration: none;
+  }
+  .back-btn:hover { background: rgba(255,255,255,.35); }
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+  .info-box {
+    background: #fff3e0; border-left: 4px solid #ff8c00;
+    padding: 14px 18px; border-radius: 8px; margin-bottom: 24px;
+    font-size: .9rem; color: #555;
+  }
+  .info-box strong { color: #e65100; }
+  .post-card {
+    background: #fff; border-radius: 12px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.08);
+    margin-bottom: 24px; overflow: hidden;
+  }
+  .post-header {
+    background: #f8f8f8; padding: 12px 20px;
+    border-bottom: 1px solid #eee;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .post-header .title { font-weight: 700; font-size: .95rem; color: #333; }
+  .post-header .date  { font-size: .8rem; color: #999; }
+  .post-body { display: grid; grid-template-columns: 200px 1fr; gap: 0; }
+  @media(max-width:700px){ .post-body{ grid-template-columns:1fr; } }
+
+  /* GORSEL */
+  .img-panel {
+    padding: 20px; border-right: 1px solid #f0f0f0;
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+  }
+  .img-panel img {
+    width: 100%; max-width: 160px; border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.12); cursor: pointer;
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 9px 16px; border: none; border-radius: 8px;
+    font-size: .85rem; font-weight: 600; cursor: pointer;
+    text-decoration: none; transition: .2s; width: 100%; justify-content: center;
+  }
+  .btn-orange { background: #ff4b00; color: #fff; }
+  .btn-orange:hover { background: #e04000; }
+  .btn-green  { background: #00a844; color: #fff; }
+  .btn-green:hover  { background: #008a38; }
+  .btn-gray   { background: #f0f0f0; color: #444; }
+  .btn-gray:hover   { background: #e0e0e0; }
+  .no-img {
+    width: 100%; max-width: 240px; height: 180px;
+    background: #f5f5f5; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: #bbb; font-size: .85rem;
+  }
+
+  /* CAPTION */
+  .caption-panel { padding: 20px; }
+  .caption-panel label { font-weight: 700; font-size: .85rem; color: #555; display: block; margin-bottom: 8px; }
+  .caption-box {
+    width: 100%; min-height: 200px; padding: 12px;
+    border: 1.5px solid #e0e0e0; border-radius: 8px;
+    font-size: .88rem; line-height: 1.6; resize: vertical;
+    font-family: 'Segoe UI', sans-serif; color: #333;
+    background: #fafafa;
+  }
+  .caption-box:focus { outline: none; border-color: #ff4b00; background: #fff; }
+  .copy-row { display: flex; gap: 10px; margin-top: 10px; }
+  .copied-msg { color: #00a844; font-size: .82rem; display: none; align-items: center; }
+  .tab-btn {
+    padding: 7px 16px; border: none; border-radius: 8px;
+    font-size: .85rem; font-weight: 600; cursor: pointer;
+    background: #f0f0f0; color: #555; transition: .2s;
+  }
+  .tab-btn.active { background: #ff4b00; color: #fff; }
+  .tab-btn:hover:not(.active) { background: #e0e0e0; }
+  .btn-wa { background: #25d366; color: #fff; }
+  .btn-wa:hover { background: #1db954; }
+
+  /* ADIMLAR */
+  .steps {
+    background: #f8f8f8; border-radius: 8px;
+    padding: 14px 18px; margin-top: 16px;
+  }
+  .steps h4 { font-size: .85rem; color: #666; margin-bottom: 8px; }
+  .steps ol { padding-left: 18px; }
+  .steps li { font-size: .83rem; color: #555; margin-bottom: 5px; line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📸 Instagram Paylaşım Hazırlığı</h1>
+  <a href="/" class="back-btn">← Panele Dön</a>
+</header>
+
+<div class="container">
+
+  <div class="info-box">
+    <strong>Nasıl kullanılır?</strong> Aşağıdan paylaşmak istediğiniz ürünü seçin.
+    Görseli indirin, caption'ı kopyalayın, Instagram'a gidin ve paylaşın.
+  </div>
+
+  {% if not posts %}
+  <div style="text-align:center;padding:60px;color:#aaa">
+    Henüz paylaşım yok. Önce bir ürün paylaşın.
+  </div>
+  {% endif %}
+
+  {% for p in posts %}
+  <div class="post-card">
+    <div class="post-header">
+      <div class="title">{{ p.title }}</div>
+      <div class="date">{{ p.posted_at }}</div>
+    </div>
+    <div class="post-body">
+
+      <!-- GORSEL -->
+      <div class="img-panel">
+        {% if p.img_exists %}
+        <img src="/image/{{ p.img_file }}" alt="{{ p.title }}"
+             onclick="window.open('/image/{{ p.img_file }}','_blank')" title="Büyütmek için tıklayın">
+        <a href="/image/{{ p.img_file }}" download="{{ p.img_file }}" class="btn btn-orange">
+          ⬇ Görseli İndir
+        </a>
+        {% else %}
+        <div class="no-img">Görsel bulunamadı</div>
+        {% endif %}
+      </div>
+
+      <!-- CAPTION -->
+      <div class="caption-panel">
+
+        <!-- SEKMELER -->
+        <div style="display:flex;gap:8px;margin-bottom:12px">
+          <button class="tab-btn active" onclick="switchTab({{ loop.index }}, 'ig')" id="tab-ig-{{ loop.index }}">
+            📸 Instagram
+          </button>
+          <button class="tab-btn" onclick="switchTab({{ loop.index }}, 'wa')" id="tab-wa-{{ loop.index }}">
+            💬 WhatsApp
+          </button>
+        </div>
+
+        <!-- INSTAGRAM CAPTION -->
+        <div id="panel-ig-{{ loop.index }}">
+          <label>Instagram Caption:</label>
+          <textarea class="caption-box" id="caption-ig-{{ loop.index }}" readonly>{{ p.caption }}</textarea>
+          <div class="copy-row">
+            <button class="btn btn-green" onclick="copyCaption('caption-ig-{{ loop.index }}', 'msg-ig-{{ loop.index }}')">
+              📋 Caption'ı Kopyala
+            </button>
+            <span class="copied-msg" id="msg-ig-{{ loop.index }}">✅ Kopyalandı!</span>
+          </div>
+          <div class="steps">
+            <h4>📱 Instagram adımları:</h4>
+            <ol>
+              <li>Görseli <strong>indirin</strong></li>
+              <li><strong>Caption'ı kopyalayın</strong></li>
+              <li>Instagram → <strong>+ Yeni paylaşım</strong> → görseli seçin → caption'ı yapıştırın</li>
+            </ol>
+          </div>
+        </div>
+
+        <!-- WHATSAPP CAPTION -->
+        <div id="panel-wa-{{ loop.index }}" style="display:none">
+          <button class="btn btn-wa" style="width:100%;justify-content:center;margin-bottom:12px"
+                  onclick="prepareWA('{{ p.asin }}', {{ loop.index }})">
+            💬 WhatsApp İçin Hazırla
+          </button>
+          <div id="wa-ready-{{ loop.index }}" style="display:none">
+            <label>WhatsApp Metni (Telegram ile aynı format):</label>
+            <textarea class="caption-box" id="caption-wa-{{ loop.index }}" readonly></textarea>
+            <div class="copy-row">
+              <button class="btn btn-wa" onclick="copyCaption('caption-wa-{{ loop.index }}', 'msg-wa-{{ loop.index }}')">
+                📋 Metni Kopyala
+              </button>
+              <span class="copied-msg" id="msg-wa-{{ loop.index }}">✅ Kopyalandı!</span>
+            </div>
+          </div>
+          <div class="steps">
+            <h4>💬 WhatsApp Kanal adımları:</h4>
+            <ol>
+              <li><strong>"WhatsApp İçin Hazırla"</strong> butonuna basın</li>
+              <li>Görseli <strong>indirin</strong></li>
+              <li><strong>"Metni Kopyala"</strong> butonuna basın</li>
+              <li>WhatsApp → Kanalınıza girin → görseli ekleyin → metni <strong>yapıştırın</strong> → Gönder!</li>
+            </ol>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+  {% endfor %}
+
+</div>
+
+<script>
+function copyCaption(id, msgId) {
+  const el = document.getElementById(id);
+  el.select();
+  el.setSelectionRange(0, 99999);
+  navigator.clipboard.writeText(el.value).then(() => {
+    const msg = document.getElementById(msgId);
+    msg.style.display = 'inline-flex';
+    setTimeout(() => msg.style.display = 'none', 3000);
+  });
+}
+
+function prepareWA(asin, idx) {
+  fetch('/wa_caption/' + asin)
+    .then(r => r.json())
+    .then(d => {
+      if (d.ok) {
+        document.getElementById('caption-wa-' + idx).value = d.text;
+        document.getElementById('wa-ready-' + idx).style.display = 'block';
+      } else {
+        alert('Hata: ' + d.msg);
+      }
+    });
+}
+
+function switchTab(idx, platform) {
+  document.getElementById('panel-ig-' + idx).style.display = platform === 'ig' ? 'block' : 'none';
+  document.getElementById('panel-wa-' + idx).style.display = platform === 'wa' ? 'block' : 'none';
+  document.getElementById('tab-ig-' + idx).className = 'tab-btn' + (platform === 'ig' ? ' active' : '');
+  document.getElementById('tab-wa-' + idx).className = 'tab-btn' + (platform === 'wa' ? ' active' : '');
+}
+</script>
+
+</body>
+</html>

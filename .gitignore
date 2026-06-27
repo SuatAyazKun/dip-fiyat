@@ -1,0 +1,42 @@
+# Gizli ayarlar — ASLA commit etmeyin
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# Cikti dosyalari
+output/
+logs/
+data/
+
+# Gecici dosyalar
+assets/temp/
+*.tmp
+
+# WhatsApp oturum verileri (kisisel veri)
+whatsapp_bridge/.wwebjs_auth/
+whatsapp_bridge/node_modules/
+
+# FFmpeg binary
+ffmpeg.exe
+ffprobe.exe
+
+# IDE
+.vscode/
+.idea/
+*.suo
+*.user
+
+# Windows
+Thumbs.db
+desktop.ini

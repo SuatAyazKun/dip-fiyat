@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dip Fiyat — Yönetim Paneli</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; color: #222; }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, #ff4b00, #ff8c00);
+    color: #fff; padding: 18px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    box-shadow: 0 2px 8px rgba(0,0,0,.2);
+  }
+  header h1 { font-size: 1.6rem; letter-spacing: 1px; }
+  header span { font-size: .85rem; opacity: .85; }
+  .badge-running {
+    background: #fff; color: #ff4b00; padding: 4px 12px;
+    border-radius: 20px; font-weight: 700; font-size: .8rem;
+    animation: pulse 1s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+
+  /* LAYOUT */
+  .container { max-width: 1200px; margin: 0 auto; padding: 24px 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 24px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  @media(max-width:768px){ .grid-3,.grid-2{ grid-template-columns:1fr; } }
+
+  /* KART */
+  .card {
+    background: #fff; border-radius: 12px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.08); overflow: hidden;
+  }
+  .card-header {
+    padding: 14px 20px; font-weight: 700; font-size: .95rem;
+    border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; gap: 8px;
+  }
+  .card-body { padding: 20px; }
+
+  /* STAT KUTULARI */
+  .stat-box { text-align: center; }
+  .stat-box .num { font-size: 2.4rem; font-weight: 800; color: #ff4b00; }
+  .stat-box .lbl { font-size: .8rem; color: #888; margin-top: 4px; }
+
+  /* BUTONLAR */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 10px 20px; border: none; border-radius: 8px;
+    font-size: .9rem; font-weight: 600; cursor: pointer; transition: .2s;
+  }
+  .btn-orange { background: #ff4b00; color: #fff; }
+  .btn-orange:hover { background: #e04000; }
+  .btn-green  { background: #00a844; color: #fff; }
+  .btn-green:hover  { background: #008a38; }
+  .btn-blue   { background: #0070cc; color: #fff; }
+  .btn-blue:hover   { background: #005aaa; }
+  .btn-red    { background: #e53935; color: #fff; padding: 6px 12px; font-size: .8rem; }
+  .btn-red:hover    { background: #c62828; }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-full { width: 100%; justify-content: center; margin-top: 10px; }
+
+  /* FORM */
+  .form-group { margin-bottom: 14px; }
+  .form-group label { display: block; font-size: .82rem; font-weight: 600; margin-bottom: 5px; color: #555; }
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%; padding: 9px 12px; border: 1.5px solid #ddd;
+    border-radius: 8px; font-size: .9rem; transition: .2s;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    outline: none; border-color: #ff4b00;
+  }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* LOG */
+  #log-box {
+    background: #1a1a2e; color: #e0e0e0; font-family: monospace;
+    font-size: .82rem; padding: 16px; border-radius: 8px;
+    height: 260px; overflow-y: auto; white-space: pre-wrap; line-height: 1.6;
+  }
+  .log-start { color: #ffd700; }
+  .log-end-ok { color: #00e676; }
+  .log-end-err { color: #ff5252; }
+  .log-info { color: #80cbc4; }
+
+  /* TABLO */
+  table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+  th { background: #f8f8f8; padding: 10px 14px; text-align: left; font-weight: 700; color: #555; border-bottom: 2px solid #eee; }
+  td { padding: 10px 14px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+  tr:hover td { background: #fafafa; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: .75rem; font-weight: 700; }
+  .badge-green { background: #e8f5e9; color: #2e7d32; }
+  .badge-red   { background: #ffebee; color: #c62828; }
+  .badge-orange{ background: #fff3e0; color: #e65100; }
+
+  /* TASK SCHEDULER */
+  .task-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+  .task-row:last-child { border-bottom: none; }
+  .task-name { font-weight: 600; font-size: .9rem; }
+  .task-time { font-size: .8rem; color: #888; }
+
+  /* ALERT */
+  .alert { padding: 10px 16px; border-radius: 8px; margin-bottom: 16px; font-size: .88rem; display: none; }
+  .alert-ok  { background: #e8f5e9; color: #2e7d32; }
+  .alert-err { background: #ffebee; color: #c62828; }
+
+  /* TABS */
+  .tabs { display: flex; gap: 4px; margin-bottom: 16px; }
+  .tab { padding: 8px 18px; border-radius: 8px 8px 0 0; font-weight: 600; font-size: .85rem; cursor: pointer; border: none; background: #e0e0e0; color: #555; }
+  .tab.active { background: #ff4b00; color: #fff; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🔥 DİP FİYAT — Yönetim Paneli</h1>
+  <div style="display:flex;align-items:center;gap:12px">
+    <span id="clock"></span>
+    {% if running %}
+    <span class="badge-running">⚡ Çalışıyor</span>
+    {% endif %}
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ALERT -->
+  <div id="alert" class="alert"></div>
+
+  <!-- RESET BUTONU — sadece takılı kalırsa kullan -->
+  <div id="reset-bar" style="display:none;background:#fff3e0;padding:10px 16px;border-radius:8px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
+    <span style="font-size:.85rem;color:#e65100">⚠️ Sistem takılı kaldı mı? Sıfırlayın.</span>
+    <button class="btn btn-red" onclick="resetPipeline()">Sıfırla</button>
+  </div>
+
+  <!-- İSTATİSTİKLER -->
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-body stat-box">
+        <div class="num" id="stat-total">{{ stats.total }}</div>
+        <div class="lbl">Toplam Paylaşım</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body stat-box">
+        <div class="num" id="stat-today">{{ stats.today }}</div>
+        <div class="lbl">Bugün Paylaşılan</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body stat-box">
+        <div class="num" style="font-size:1.3rem;margin-top:8px" id="stat-last">{{ stats.last_post }}</div>
+        <div class="lbl">Son Paylaşım</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+
+    <!-- SOL KOLON -->
+    <div>
+
+      <!-- HIZLI İŞLEMLER -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-header">⚡ Hızlı İşlemler</div>
+        <div class="card-body">
+          <button class="btn btn-orange" id="btn-auto" onclick="runAuto()" style="width:100%;justify-content:center;margin-bottom:8px;font-size:1.1rem;padding:16px">
+            🚀 Şimdi Çalıştır — Fırsat Bul & Gönder
+          </button>
+          <hr style="margin:12px 0;border:none;border-top:1px solid #eee">
+          <div class="form-group">
+            <label>Amazon Ürün veya Affiliate Link</label>
+            <input type="text" id="affiliate-input" placeholder="https://www.amazon.com.tr/dp/ASIN veya affiliate linkiniz">
+          </div>
+          <button class="btn btn-blue btn-full" onclick="runUrl()">🔗 Bu Ürünü Paylaş</button>
+        </div>
+      </div>
+
+      <!-- TASK SCHEDULER -->
+      <div class="card">
+        <div class="card-header">⏰ Otomatik Görevler</div>
+        <div class="card-body">
+          {% for task in sched %}
+          <div class="task-row">
+            <div>
+              <div class="task-name">
+                {{ task.name.replace('DipFiyat_','') }}
+                {% if task.status == 'Aktif' %}
+                  <span class="badge badge-green">Aktif</span>
+                {% else %}
+                  <span class="badge badge-red">{{ task.status }}</span>
+                {% endif %}
+              </div>
+              <div class="task-time">{{ task.next_run }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SAĞ KOLON — CANLI LOG -->
+    <div class="card">
+      <div class="card-header">📋 Canlı Log</div>
+      <div class="card-body">
+        <div id="log-box">Panel başlatıldı. Hazır bekliyor...</div>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- INSTAGRAM -->
+  <div style="margin-bottom:24px">
+    <a href="/instagram" class="btn btn-blue" style="width:100%;justify-content:center;padding:14px;font-size:1rem">
+      📸 Instagram İçin Görsel & Caption Hazırla
+    </a>
+  </div>
+
+  <!-- SON PAYLAŞIMLAR -->
+  <div class="card">
+    <div class="card-header">📦 Son Paylaşımlar</div>
+    <div class="card-body" style="padding:0;overflow-x:auto">
+      {% if posts %}
+      <table>
+        <thead>
+          <tr>
+            <th>Ürün</th>
+            <th>Fiyat</th>
+            <th>İndirim</th>
+            <th>Tarih</th>
+            <th>ASIN</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in posts %}
+          <tr id="row-{{ p[0] }}">
+            <td style="max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p[1] }}</td>
+            <td><b>{{ "{:,.0f}".format(p[4]).replace(",",".") }} TL</b></td>
+            <td>
+              {% if p[2] %}
+              <span class="badge badge-orange">%{{ p[2]|int }} indirim</span>
+              {% else %}—{% endif %}
+            </td>
+            <td>{{ p[5][:16].replace("T"," ") if p[5] else "—" }}</td>
+            <td><code style="font-size:.78rem">{{ p[0] }}</code></td>
+            <td>
+              <button class="btn btn-red" onclick="deletePost('{{ p[0] }}')">Sil</button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div style="padding:32px;text-align:center;color:#aaa">Henüz paylaşım yok.</div>
+      {% endif %}
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// Saat
+function updateClock(){
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.toLocaleTimeString('tr-TR', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// Alert
+function showAlert(msg, ok=true){
+  const el = document.getElementById('alert');
+  el.className = 'alert ' + (ok ? 'alert-ok' : 'alert-err');
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(() => el.style.display='none', 5000);
+}
+
+// Log kutusu
+const logBox = document.getElementById('log-box');
+function appendLog(msg, cls=''){
+  const line = document.createElement('div');
+  line.className = cls;
+  line.textContent = msg;
+  logBox.appendChild(line);
+  logBox.scrollTop = logBox.scrollHeight;
+}
+function clearLog(){ logBox.innerHTML = ''; }
+
+// SSE log stream
+let evtSource = null;
+function startLogStream(){
+  if(evtSource) evtSource.close();
+  evtSource = new EventSource('/log_stream');
+  evtSource.onmessage = function(e){
+    const data = JSON.parse(e.data);
+    if(data.type === 'ping') return;
+    if(data.type === 'start') appendLog('▶ ' + data.msg, 'log-start');
+    else if(data.type === 'end'){
+      appendLog((data.rc===0 ? '✅ ' : '❌ ') + data.msg, data.rc===0 ? 'log-end-ok' : 'log-end-err');
+      evtSource.close();
+      setRunning(false);
+      refreshStats();
+      location.reload();
+    } else {
+      appendLog(data.msg, 'log-info');
+    }
+  };
+}
+
+// Buton durumu
+function setRunning(on){
+  const btn = document.getElementById('btn-auto');
+  btn.disabled = on;
+  btn.textContent = on ? '⏳ Çalışıyor...' : '🔍 Otomatik Fırsat Bul ve Paylaş';
+}
+
+// İstatistik güncelle
+function refreshStats(){
+  fetch('/status').then(r=>r.json()).then(d=>{
+    document.getElementById('stat-total').textContent = d.stats.total;
+    document.getElementById('stat-today').textContent = d.stats.today;
+    document.getElementById('stat-last').textContent  = d.stats.last_post;
+  });
+}
+
+// Fırsat bul ve gönder
+function runAuto(){
+  clearLog();
+  setRunning(true);
+  fetch('/run', {method:'POST'})
+    .then(r=>r.json())
+    .then(d=>{
+      if(!d.ok){ showAlert(d.msg, false); setRunning(false); }
+      else { startLogStream(); }
+    });
+}
+
+// URL ile çalıştır
+function runUrl(){
+  const affiliateUrl = document.getElementById('affiliate-input').value.trim();
+  if(!affiliateUrl){ showAlert('Affiliate link girin!', false); return; }
+  clearLog();
+  setRunning(true);
+  startLogStream();
+  fetch('/run_url', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({url: '', affiliate_url: affiliateUrl})})
+    .then(r=>r.json())
+    .then(d=>{ showAlert(d.msg, d.ok); if(!d.ok) setRunning(false); });
+}
+
+// Manuel gönderi
+function manualPost(){
+  const deal = {
+    title:         document.getElementById('m-title').value.trim(),
+    current_price: document.getElementById('m-price').value,
+    original_price:document.getElementById('m-orig').value,
+    seller:        document.getElementById('m-seller').value.trim(),
+    stock_note:    document.getElementById('m-stock').value.trim(),
+    image_url:     document.getElementById('m-img').value.trim(),
+    asin:          document.getElementById('m-asin').value.trim(),
+    condition:     document.getElementById('m-condition').value,
+    category:      document.getElementById('m-category').value,
+  };
+  if(!deal.title || !deal.current_price){ showAlert('Ürün adı ve fiyat zorunlu!', false); return; }
+  showAlert('Gönderiliyor...', true);
+  fetch('/manual_post', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(deal)})
+    .then(r=>r.json())
+    .then(d=>{ showAlert(d.msg, d.ok); if(d.ok) setTimeout(()=>location.reload(), 2000); });
+}
+
+// Kayıt sil
+function deletePost(asin){
+  if(!confirm('Bu kaydı silmek istiyor musunuz?\n(Ürün 30 gün kilidi kalkar, tekrar paylaşılabilir)')) return;
+  fetch('/delete_post/'+asin, {method:'POST'})
+    .then(r=>r.json())
+    .then(d=>{ if(d.ok){ document.getElementById('row-'+asin).remove(); showAlert('Silindi.'); } });
+}
+
+// Sayfa açılırken çalışıyor mu kontrol et
+fetch('/status').then(r=>r.json()).then(d=>{
+  if(d.running){ setRunning(true); document.getElementById('reset-bar').style.display='flex'; }
+});
+
+function resetPipeline(){
+  fetch('/reset', {method:'POST'}).then(r=>r.json()).then(d=>{
+    showAlert('Sıfırlandı, şimdi tekrar deneyebilirsiniz.', true);
+    setRunning(false);
+    document.getElementById('reset-bar').style.display='none';
+  });
+}
+</script>
+
+</body>
+</html>

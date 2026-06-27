@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dip Fiyat — Bulunan Fırsatlar</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; color: #222; }
+  header {
+    background: linear-gradient(135deg, #ff4b00, #ff8c00);
+    color: #fff; padding: 18px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    box-shadow: 0 2px 8px rgba(0,0,0,.2);
+  }
+  header h1 { font-size: 1.6rem; }
+  .back-btn {
+    background: rgba(255,255,255,.2); color: #fff; border: none;
+    padding: 8px 16px; border-radius: 8px; cursor: pointer;
+    font-size: .9rem; text-decoration: none;
+  }
+  .container { max-width: 1000px; margin: 0 auto; padding: 24px 16px; }
+  .info-box {
+    background: #fff3e0; border-left: 4px solid #ff8c00;
+    padding: 14px 18px; border-radius: 8px; margin-bottom: 24px;
+    font-size: .9rem; color: #555;
+  }
+  .info-box strong { color: #e65100; }
+  .deal-card {
+    background: #fff; border-radius: 12px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.08);
+    margin-bottom: 20px; overflow: hidden;
+  }
+  .deal-body {
+    display: grid; grid-template-columns: 140px 1fr;
+    gap: 0;
+  }
+  .deal-img {
+    padding: 16px; display: flex; align-items: center; justify-content: center;
+    border-right: 1px solid #f0f0f0;
+  }
+  .deal-img img { width: 110px; height: 110px; object-fit: contain; border-radius: 8px; }
+  .deal-info { padding: 16px; }
+  .deal-title { font-weight: 700; font-size: .95rem; color: #222; margin-bottom: 8px; }
+  .deal-price { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .price-new  { font-size: 1.3rem; font-weight: 800; color: #00a844; }
+  .price-old  { font-size: .9rem; color: #aaa; text-decoration: line-through; }
+  .badge      { background: #ff4b00; color: #fff; font-size: .75rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+  .asin-tag   { font-size: .78rem; color: #999; margin-bottom: 10px; }
+  .affiliate-row { display: flex; gap: 8px; align-items: center; }
+  .affiliate-input {
+    flex: 1; padding: 9px 12px; border: 1.5px solid #ddd;
+    border-radius: 8px; font-size: .85rem; transition: .2s;
+  }
+  .affiliate-input:focus { outline: none; border-color: #ff4b00; }
+  .btn {
+    padding: 9px 18px; border: none; border-radius: 8px;
+    font-size: .85rem; font-weight: 700; cursor: pointer; transition: .2s;
+    white-space: nowrap;
+  }
+  .btn-orange { background: #ff4b00; color: #fff; }
+  .btn-orange:hover { background: #e04000; }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .result-msg { font-size: .82rem; margin-top: 8px; padding: 6px 10px; border-radius: 6px; display: none; }
+  .result-ok  { background: #e8f5e9; color: #2e7d32; }
+  .result-err { background: #ffebee; color: #c62828; }
+  .btn-reset  { background: #607d8b; color: #fff; margin-top: 6px; font-size: .8rem; padding: 6px 14px; }
+  .btn-reset:hover { background: #455a64; }
+  .empty { text-align: center; padding: 60px; color: #aaa; font-size: 1rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🔍 Bulunan Fırsatlar</h1>
+  <a href="/" class="back-btn">← Panele Dön</a>
+</header>
+
+<div class="container">
+
+  <div class="info-box">
+    <strong>Otomatik sistem aktif!</strong>
+    Affiliate linkler otomatik oluşturulur. <strong>"Gönder"</strong> butonuna basmanız yeterli.
+  </div>
+
+  {% if not deals %}
+  <div class="empty">
+    Henüz fırsat aranmadı.<br><br>
+    <a href="/" class="btn btn-orange">Panele Dön → Fırsat Ara</a>
+  </div>
+  {% endif %}
+
+  {% for deal in deals %}
+  <div class="deal-card" id="card-{{ deal.asin }}">
+    <div class="deal-body">
+      <div class="deal-img">
+        {% if deal.image_url %}
+        <img src="{{ deal.image_url }}" alt="{{ deal.title }}">
+        {% endif %}
+      </div>
+      <div class="deal-info">
+        <div class="deal-title">{{ deal.title[:80] }}</div>
+        <div class="deal-price">
+          <span class="price-new">{{ "{:,.0f}".format(deal.current_price).replace(",",".") }} TL</span>
+          {% if deal.original_price and deal.original_price > deal.current_price %}
+          <span class="price-old">{{ "{:,.0f}".format(deal.original_price).replace(",",".") }} TL</span>
+          {% endif %}
+          {% if deal.discount_pct >= 1 %}
+          <span class="badge">%{{ deal.discount_pct|int }} İndirim</span>
+          {% endif %}
+        </div>
+        <div class="asin-tag">ASIN: {{ deal.asin }}</div>
+        <div class="affiliate-row">
+          <a href="https://www.amazon.com.tr/dp/{{ deal.asin }}" target="_blank" class="btn btn-gray">
+            🔗 Amazon'da Aç
+          </a>
+          <button class="btn btn-orange" id="btn-{{ deal.asin }}"
+                  onclick="sendDeal('{{ deal.asin }}')">
+            📤 Gönder
+          </button>
+        </div>
+        <div class="result-msg" id="msg-{{ deal.asin }}">
+          <button class="btn btn-reset" id="reset-btn-{{ deal.asin }}" style="display:none;margin-top:6px"
+                  onclick="resetBlock('{{ deal.asin }}')">
+            🔓 Engeli Kaldır
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+
+</div>
+
+<script>
+function sendDeal(asin) {
+  const btn = document.getElementById('btn-' + asin);
+  const msg = document.getElementById('msg-' + asin);
+
+  btn.disabled    = true;
+  btn.textContent = '⏳ Gönderiliyor...';
+  msg.style.display = 'none';
+
+  fetch('/send_deal', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({asin: asin, affiliate_url: ''})
+  })
+  .then(r => r.json())
+  .then(d => {
+    msg.className   = 'result-msg ' + (d.ok ? 'result-ok' : 'result-err');
+    msg.style.display = 'block';
+    if (d.ok) {
+      msg.textContent = '✅ ' + d.msg;
+      btn.textContent = '✅ Gönderildi';
+    } else {
+      msg.innerHTML = '❌ ' + d.msg;
+      // "son X gün" engeliyse "Engeli Kaldır" butonunu göster
+      if (d.msg && d.msg.includes('gun icinde')) {
+        const rb = document.getElementById('reset-btn-' + asin);
+        if (rb) rb.style.display = 'inline-block';
+      }
+      btn.disabled    = false;
+      btn.textContent = '📤 Gönder';
+    }
+  });
+}
+
+function resetBlock(asin) {
+  fetch('/reset_block/' + asin, {method: 'POST'})
+  .then(r => r.json())
+  .then(d => {
+    const msg = document.getElementById('msg-' + asin);
+    const rb  = document.getElementById('reset-btn-' + asin);
+    if (d.ok) {
+      msg.className   = 'result-msg result-ok';
+      msg.innerHTML   = '✅ Engel kaldırıldı, tekrar gönderebilirsiniz.';
+      if (rb) rb.style.display = 'none';
+    } else {
+      msg.innerHTML = '❌ ' + d.msg;
+    }
+  });
+}
+</script>
+
+</body>
+</html>
